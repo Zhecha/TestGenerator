@@ -20,5 +20,20 @@ namespace libraryGenerator
                 .WithBody(Block(ExpressionStatement(InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,IdentifierName("Assert"),IdentifierName("Fail")))
                 .WithArgumentList(ArgumentList(SingletonSeparatedList(Argument(LiteralExpression(SyntaxKind.StringLiteralExpression,Literal("test")))))))));
         }
+
+        private MemberDeclarationSyntax ClassDeclar(string name, List<MemberDeclarationSyntax> methods)
+        {
+            return ClassDeclaration(name).WithAttributeLists(SingletonList(AttributeList(SingletonSeparatedList(Attribute(IdentifierName("TestClass"))))))
+                .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
+                .WithMembers(List(methods));
+        }
+
+        private CompilationUnitSyntax ResultDeclar(List<UsingDirectiveSyntax> directiveSyntaxes, MemberDeclarationSyntax member, string param)
+        {
+            return CompilationUnit().WithUsings(List(directiveSyntaxes)).WithMembers(SingletonList<MemberDeclarationSyntax>(NamespaceDeclaration(QualifiedName(IdentifierName(param),IdentifierName("Test")))))
+                .WithMembers(SingletonList(member));
+        }
+
+
     }
 }
