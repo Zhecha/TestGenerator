@@ -62,32 +62,26 @@ namespace libraryGenerator
             {
                 var methods = clas.DescendantNodes().OfType<MethodDeclarationSyntax>().Where(x => x.Modifiers.Any(y => y.ValueText == "public"));
                 string nameSpace = (clas.Parent as NamespaceDeclarationSyntax)?.Name.ToString();
-                var methodsList = MethodsList(methods);
-                var classdeclar = ClassDeclar(clas.Identifier.ValueText + "Test", methodsList);
+                List<MemberDeclarationSyntax> members = new List<MemberDeclarationSyntax>();
+                foreach(var method in methods)
+                {
+                    string name = method.Identifier.ToString();
+                    int count = 1;
+                    if (members.Count != 0 && members.Any(x => (x as MethodDeclarationSyntax)?.Identifier.ToString() == method.Identifier.ToString() + "_Test"))
+                    {
+                        while (members.Any(x => (x as MethodDeclarationSyntax)?.Identifier.ToString() == method.Identifier.ToString() + count + "_Test"))
+                            count++;
+                        name += count;
+                    }
+                    members.Add(MethodDeclar(name));
+                }
+                var classdeclar = ClassDeclar(clas.Identifier.ValueText + "Test", members);
                 if (nameSpace == null)
                     testClasses.Add(new TestClass(clas.Identifier.ValueText + "Test", ResultDeclar(usings, classdeclar, "Global").NormalizeWhitespace().ToFullString()));
                 else
                     testClasses.Add(new TestClass(clas.Identifier.ValueText + "Test", ResultDeclar(usings, classdeclar, nameSpace).NormalizeWhitespace().ToFullString()));
             }
             return testClasses;
-        }
-
-        private List<MemberDeclarationSyntax> MethodsList(IEnumerable<MethodDeclarationSyntax> methods)
-        {
-            List<MemberDeclarationSyntax> members = new List<MemberDeclarationSyntax>();
-            foreach (var method in methods)
-            {
-                string name = method.Identifier.ToString();
-                int count = 1;
-                if (members.Count != 0 && members.Any(x => (x as MethodDeclarationSyntax)?.Identifier.ToString() == method.Identifier.ToString() + "_Test"))
-                {
-                    while(members.Any(x => (x as MethodDeclarationSyntax)?.Identifier.ToString() == method.Identifier.ToString() + count +"_Test"))
-                        count++;
-                    name += count;
-                }
-                members.Add(MethodDeclar(name));
-            }
-            return members;
         }
 
         public Task Generate(List<string> files)
